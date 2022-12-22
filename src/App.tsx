@@ -1,18 +1,14 @@
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
+import { Container, CssBaseline, ThemeProvider } from '@mui/material';
+import { darkTheme } from './App.theme';
+import { CreateTask } from './components/CreateTask/CreateTask';
 
 export const App = () => {
   return (
     <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <main>This app is using the dark mode</main>
+      <Container maxWidth='md' sx={{ padding: '2vmax'}}>
+        <CssBaseline />
+        <CreateTask />
+      </Container>
     </ThemeProvider>
   );
 }
-
