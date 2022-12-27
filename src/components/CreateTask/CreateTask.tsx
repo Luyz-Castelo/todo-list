@@ -1,20 +1,19 @@
-import React, { useState } from 'react'
 import { Button, Container, TextField } from "@mui/material"
 import { StyledBox, StyledContainer, StyledTextField, StyledTypography } from "./CreateTask.style"
-
-const createNewTask = (event: React.BaseSyntheticEvent) => {
-  event.preventDefault();
-
-  console.log(event.target)
-}
+import { useState } from "react"
+import { dispatcher } from "../../helpers/dispatcher"
+import { NEW_TASK } from "../../constants/dispatches"
+import { Task } from "../../helpers/interfaces/task.interface"
 
 export const CreateTask = () => {
-  const [formData, setFormData] = useState({});
-  
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({...formData, [event.target.name]: event.target.value});
-    console.log(event.target.name)
-    console.log(event.target.value)
+
+  const [taskName, setTaskName] = useState('')
+  const [dueDate, setDueDate] = useState('')
+
+  const dispatchNewTask = (e: React.FormEvent<HTMLElement>) => {
+    const newTask: Task = { taskName, dueDate }
+    e.preventDefault();
+    dispatcher.dispatch(NEW_TASK, newTask)
   }
 
   return (
@@ -24,10 +23,10 @@ export const CreateTask = () => {
       </StyledTypography>
       
       <Container>
-        <StyledBox component='form' onSubmit={event => createNewTask(event)}>
+        <StyledBox component='form' onSubmit={e => dispatchNewTask(e)}>
           <StyledContainer id='inputs'>
-            <StyledTextField required name='task-name' id='standard-required' label='Name' onChange={handleChange} />
-            <TextField required name='due-date' id='standard-required' label='Due Date' onChange={handleChange} />
+            <StyledTextField required name='taskName' id='standard-required' label='Name' onChange={(e) => setTaskName(e.target.value)} />
+            <TextField required name='dueDate' id='standard-required' label='Due Date' onChange={(e) => setDueDate(e.target.value)} />
           </StyledContainer>
           <StyledContainer>
             <Button variant='contained' type='submit'>Create Task</Button>
