@@ -1,31 +1,58 @@
-import { Container, Stack, Typography } from "@mui/material";
+import { Table, Typography, TableContainer, TableHead, TableRow, TableCell, TableBody, Paper } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import DoneIcon from '@mui/icons-material/Done';
 import { useEffect, useState } from "react";
 import { NEW_TASK } from "../../constants/dispatches";
 import { Task } from "../../helpers/interfaces/task.interface";
 import { dispatcher } from "../../helpers/dispatcher"
+import { StyledContainer } from "./TaskList.style";
 
-export const  TaskList = () => {
-  const exampleTask: Task[] = [{taskName: 'lavar louça', dueDate: 'hoje'}];
-  const [tasks, setTasks] = useState(exampleTask);
+const baseTask: Task = { taskName: 'Example task' , dueDate: new Date().toUTCString() }
+
+const handleDoneTask = (task: Task) => {
+  console.log('handleDoneTask', task)
+}
+
+const handleDeleteTask = (task: Task) => {
+  console.log('handleDeleteTask', task)
+}
+
+export const TaskList = () => {
+  const [tasks, setTasks] = useState([baseTask]);
 
   useEffect(() => {
     dispatcher.listen(NEW_TASK, (newTask: Task) => {
-      setTasks((prevTasks) => [...prevTasks, newTask]);
+      setTasks((prevTasks: Task[]) => [...prevTasks, newTask]);
     });
   }, []);
     
   return (
-    <Container sx={{ backgroundColor: '#222222' }}>
-      <Typography variant='h4' mt={'1rem'} paddingTop={2}>Task List</Typography>
-      <Stack direction="column" justifyContent="center" alignItems="stretch" spacing={2} mt={2}>
-        {tasks.map((task, index) => (
-          <Container key={index} sx={{ display: 'block', borderRadius: '1.5rem', backgroundColor: 'brown' }}>
-            <div>{task.taskName}</div>
-            <div>{task.dueDate}</div>
-          </Container>
-        ))}
-      </Stack>
-      <Container sx={{padding: '30px 0px !important'}}>{localStorage.getItem('taskList')}</Container>
-    </Container>
+    <StyledContainer>
+      <Typography variant='h4'>Task List</Typography>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Task Name</TableCell>              
+              <TableCell>Due Date</TableCell>              
+              <TableCell align='right'>Actions</TableCell>              
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {tasks.map((task: Task, index: number) => (
+              <TableRow key={index}>
+                <TableCell>{task.taskName}</TableCell>
+                <TableCell>{task.dueDate}</TableCell>
+                <TableCell align='right'>
+                  <DoneIcon onClick={() => handleDoneTask(task)} />
+                  <DeleteIcon onClick={() => handleDeleteTask(task)} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </StyledContainer>
   )
 }

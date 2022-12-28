@@ -9,10 +9,10 @@ export const CreateTask = () => {
 
   const [taskName, setTaskName] = useState('')
   const [dueDate, setDueDate] = useState('')
-
+  
   const dispatchNewTask = (e: React.FormEvent<HTMLElement>) => {
-    const newTask: Task = { taskName, dueDate }
     e.preventDefault();
+    const newTask: Task = { taskName, dueDate }
     dispatcher.dispatch(NEW_TASK, newTask)
   }
 
@@ -29,7 +29,7 @@ export const CreateTask = () => {
             <TextField required name='dueDate' id='standard-required' label='Due Date' onChange={(e) => setDueDate(e.target.value)} />
           </StyledContainer>
           <StyledContainer>
-            <Button variant='contained' type='submit'>Create Task</Button>
+            <Button variant='contained' type='submit' color='primary'>Create Task</Button>
           </StyledContainer>
         </StyledBox>
       </Container>
