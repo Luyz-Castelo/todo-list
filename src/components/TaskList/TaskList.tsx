@@ -43,11 +43,6 @@ export const TaskList = () => {
     
   return (
     <StyledContainer>
-      <Typography variant='h2' onClick={() => {
-        console.log('completeTasks', completeTasks)
-        console.log('incompleteTasks', incompleteTasks)
-      }}>A</Typography>
-
       <Typography variant='h4'>Completed Tasks</Typography>
       <TableContainer component={Paper}>
         <Table>
