@@ -1,35 +1,54 @@
-import { Table, Typography, TableContainer, TableHead, TableRow, TableCell, TableBody, Paper } from "@mui/material";
+import { Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Typography, Paper } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
+import RemoveIcon from '@mui/icons-material/Remove';
 import DoneIcon from '@mui/icons-material/Done';
 import { useEffect, useState } from "react";
 import { NEW_TASK } from "../../constants/dispatches";
 import { Task } from "../../helpers/interfaces/task.interface";
 import { dispatcher } from "../../helpers/dispatcher"
 import { StyledContainer } from "./TaskList.style";
+import { generateRandomUuid } from "../../helpers/generateRandomUuid";
 
-const baseTask: Task = { taskName: 'Example task' , dueDate: new Date().toUTCString() }
+const now = new Date();
+const baseCompleteTask: Task = { id: generateRandomUuid(), taskName: 'Enter the web site' , dueDate: now.toUTCString(), isComplete: false }
+const baseIncompleteTask: Task = { id: generateRandomUuid(), taskName: 'Understand this website' , dueDate: new Date(now.setDate(now.getDate() + 1)).toUTCString(), isComplete: false }
 
-const handleDoneTask = (task: Task) => {
-  console.log('handleDoneTask', task)
+const handleDoneTask = (task: Task, setCompleteTasks: Function, setIncompleteTasks: Function) => {
+  task.isComplete = !task.isComplete;
+
+  setIncompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
+  setCompleteTasks((prevTasks: Task[]) => [...prevTasks, task])
 }
 
-const handleDeleteTask = (task: Task) => {
-  console.log('handleDeleteTask', task)
+const handleRemoveTask = (task: Task, setCompleteTasks: Function, setIncompleteTasks: Function) => {
+  task.isComplete = !task.isComplete;
+
+  setCompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
+  setIncompleteTasks((prevTasks: Task[]) => [...prevTasks, task])
+}
+
+const handleDeleteTask = (task: Task, setTasks: Function) => {
+  setTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
 }
 
 export const TaskList = () => {
-  const [tasks, setTasks] = useState([baseTask]);
+  const [completeTasks, setCompleteTasks] = useState([baseCompleteTask]);
+  const [incompleteTasks, setIncompleteTasks] = useState([baseIncompleteTask]);
 
   useEffect(() => {
     dispatcher.listen(NEW_TASK, (newTask: Task) => {
-      setTasks((prevTasks: Task[]) => [...prevTasks, newTask]);
+      newTask.isComplete ? setCompleteTasks((prevTasks: Task[]) => [...prevTasks, newTask]) : setIncompleteTasks((prevTasks: Task[]) => [...prevTasks, newTask]);
     });
   }, []);
     
   return (
     <StyledContainer>
-      <Typography variant='h4'>Task List</Typography>
+      <Typography variant='h2' onClick={() => {
+        console.log('completeTasks', completeTasks)
+        console.log('incompleteTasks', incompleteTasks)
+      }}>A</Typography>
 
+      <Typography variant='h4'>Completed Tasks</Typography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -40,13 +59,38 @@ export const TaskList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {tasks.map((task: Task, index: number) => (
-              <TableRow key={index}>
+            {completeTasks.map((task: Task) => (
+              <TableRow key={task.id}>
                 <TableCell>{task.taskName}</TableCell>
                 <TableCell>{task.dueDate}</TableCell>
                 <TableCell align='right'>
-                  <DoneIcon onClick={() => handleDoneTask(task)} />
-                  <DeleteIcon onClick={() => handleDeleteTask(task)} />
+                  <RemoveIcon onClick={() => handleRemoveTask(task, setCompleteTasks, setIncompleteTasks)} />
+                  <DeleteIcon onClick={() => handleDeleteTask(task, setCompleteTasks)} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Typography variant='h4' mt={4}>Incomplete Tasks</Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Task Name</TableCell>              
+              <TableCell>Due Date</TableCell>              
+              <TableCell align='right'>Actions</TableCell>              
+            </TableRow>
+          </TableHead>
+          <TableBody>
+          {incompleteTasks.map((task: Task) => (
+              <TableRow key={task.id}>
+                <TableCell>{task.taskName}</TableCell>
+                <TableCell>{task.dueDate}</TableCell>
+                <TableCell align='right'>
+                  <DoneIcon onClick={() => handleDoneTask(task, setCompleteTasks, setIncompleteTasks)} />
+                  <DeleteIcon onClick={() => handleDeleteTask(task, setIncompleteTasks)} />
                 </TableCell>
               </TableRow>
             ))}
