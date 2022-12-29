@@ -9,31 +9,34 @@ import { dispatcher } from "../../helpers/dispatcher"
 import { StyledContainer } from "./TaskList.style";
 import { generateRandomUuid } from "../../helpers/generateRandomUuid";
 
-
 const createBaseTasks = () => {
   const now = new Date();
-  const baseCompleteTask: Task = { id: generateRandomUuid(), taskName: 'Enter the web site' , dueDate: now.toUTCString(), isComplete: false }
-  const baseIncompleteTask: Task = { id: generateRandomUuid(), taskName: 'Understand this website' , dueDate: new Date(now.setDate(now.getDate() + 1)).toUTCString(), isComplete: false }
+  const baseCompleteTask: Task = { id: generateRandomUuid(), taskName: 'Enter the web site' , dueDate: now.toUTCString(), isComplete: false };
+  const baseIncompleteTask: Task = { id: generateRandomUuid(), taskName: 'Understand this website' , dueDate: new Date(now.setDate(now.getDate() + 1)).toUTCString(), isComplete: false };
 
-  return { baseCompleteTask, baseIncompleteTask }
+  return { baseCompleteTask, baseIncompleteTask };
 }
 
 const handleDoneTask = (task: Task, setCompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, setIncompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>) => {
   task.isComplete = !task.isComplete;
 
-  setIncompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
-  setCompleteTasks((prevTasks: Task[]) => [...prevTasks, task])
+  setIncompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id));
+  setCompleteTasks((prevTasks: Task[]) => [...prevTasks, task]);
 }
 
 const handleRemoveTask = (task: Task, setCompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, setIncompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>) => {
   task.isComplete = !task.isComplete;
 
-  setCompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
-  setIncompleteTasks((prevTasks: Task[]) => [...prevTasks, task])
+  setCompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id));
+  setIncompleteTasks((prevTasks: Task[]) => [...prevTasks, task]);
 }
 
-const handleDeleteTask = (task: Task, setTasks: React.Dispatch<React.SetStateAction<Task[]>>) => {
-  setTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
+const handleDeleteTask = (task: Task, setTasks: React.Dispatch<React.SetStateAction<Task[]>>, key: string) => {
+  setTasks((prevTasks: Task[]) => {
+    const tasks = prevTasks.filter(prevTask => prevTask.id !== task.id);
+    setTasksOnLocalStorage(key, tasks);
+    return tasks;
+  })
 }
 
 const getTasksFromLocalStorage = (key: string): Task[] => {
@@ -46,6 +49,9 @@ const setTasksOnLocalStorage = (key: string, tasks: Task[]) => {
 }
 
 export const TaskList = () => {
+  const completeTasksKey = 'completeTasks';
+  const incompleteTasksKey = 'incompleteTasks';
+
   const completeTasksInStorage = getTasksFromLocalStorage('completeTasks');
   const incompleteTasksInStorage = getTasksFromLocalStorage('incompleteTasks');
   const { baseCompleteTask, baseIncompleteTask } = createBaseTasks();
@@ -57,13 +63,13 @@ export const TaskList = () => {
     dispatcher.listen(NEW_TASK, (newTask: Task) => {
       if(newTask.isComplete) {
         setCompleteTasks((prevTasks: Task[]) => {
-          setTasksOnLocalStorage('completeTasks', [...prevTasks, newTask])
-          return [...prevTasks, newTask]
+          setTasksOnLocalStorage(completeTasksKey, [...prevTasks, newTask]);
+          return [...prevTasks, newTask];
         });
       } else {
         setIncompleteTasks((prevTasks: Task[]) => {
-          setTasksOnLocalStorage('incompleteTasks', [...prevTasks, newTask])
-          return [...prevTasks, newTask]
+          setTasksOnLocalStorage(incompleteTasksKey, [...prevTasks, newTask]);
+          return [...prevTasks, newTask];
         });
       }
     });
@@ -88,7 +94,7 @@ export const TaskList = () => {
                 <TableCell>{task.dueDate}</TableCell>
                 <TableCell align='right'>
                   <RemoveIcon onClick={() => handleRemoveTask(task, setCompleteTasks, setIncompleteTasks)} />
-                  <DeleteIcon onClick={() => handleDeleteTask(task, setCompleteTasks)} />
+                  <DeleteIcon onClick={() => handleDeleteTask(task, setCompleteTasks, completeTasksKey)} />
                 </TableCell>
               </TableRow>
             ))}
@@ -113,7 +119,7 @@ export const TaskList = () => {
                 <TableCell>{task.dueDate}</TableCell>
                 <TableCell align='right'>
                   <DoneIcon onClick={() => handleDoneTask(task, setCompleteTasks, setIncompleteTasks)} />
-                  <DeleteIcon onClick={() => handleDeleteTask(task, setIncompleteTasks)} />
+                  <DeleteIcon onClick={() => handleDeleteTask(task, setIncompleteTasks, incompleteTasksKey)} />
                 </TableCell>
               </TableRow>
             ))}
