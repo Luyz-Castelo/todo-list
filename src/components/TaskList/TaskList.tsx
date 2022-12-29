@@ -9,35 +9,63 @@ import { dispatcher } from "../../helpers/dispatcher"
 import { StyledContainer } from "./TaskList.style";
 import { generateRandomUuid } from "../../helpers/generateRandomUuid";
 
-const now = new Date();
-const baseCompleteTask: Task = { id: generateRandomUuid(), taskName: 'Enter the web site' , dueDate: now.toUTCString(), isComplete: false }
-const baseIncompleteTask: Task = { id: generateRandomUuid(), taskName: 'Understand this website' , dueDate: new Date(now.setDate(now.getDate() + 1)).toUTCString(), isComplete: false }
 
-const handleDoneTask = (task: Task, setCompleteTasks: Function, setIncompleteTasks: Function) => {
+const createBaseTasks = () => {
+  const now = new Date();
+  const baseCompleteTask: Task = { id: generateRandomUuid(), taskName: 'Enter the web site' , dueDate: now.toUTCString(), isComplete: false }
+  const baseIncompleteTask: Task = { id: generateRandomUuid(), taskName: 'Understand this website' , dueDate: new Date(now.setDate(now.getDate() + 1)).toUTCString(), isComplete: false }
+
+  return { baseCompleteTask, baseIncompleteTask }
+}
+
+const handleDoneTask = (task: Task, setCompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, setIncompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>) => {
   task.isComplete = !task.isComplete;
 
   setIncompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
   setCompleteTasks((prevTasks: Task[]) => [...prevTasks, task])
 }
 
-const handleRemoveTask = (task: Task, setCompleteTasks: Function, setIncompleteTasks: Function) => {
+const handleRemoveTask = (task: Task, setCompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, setIncompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>) => {
   task.isComplete = !task.isComplete;
 
   setCompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
   setIncompleteTasks((prevTasks: Task[]) => [...prevTasks, task])
 }
 
-const handleDeleteTask = (task: Task, setTasks: Function) => {
+const handleDeleteTask = (task: Task, setTasks: React.Dispatch<React.SetStateAction<Task[]>>) => {
   setTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id))
 }
 
+const getTasksFromLocalStorage = (key: string): Task[] => {
+  const tasksInStorage = localStorage.getItem(key);
+  return tasksInStorage ? JSON.parse(tasksInStorage) : null;
+}
+
+const setTasksOnLocalStorage = (key: string, tasks: Task[]) => {
+  localStorage.setItem(key, JSON.stringify(tasks));
+}
+
 export const TaskList = () => {
-  const [completeTasks, setCompleteTasks] = useState([baseCompleteTask]);
-  const [incompleteTasks, setIncompleteTasks] = useState([baseIncompleteTask]);
+  const completeTasksInStorage = getTasksFromLocalStorage('completeTasks');
+  const incompleteTasksInStorage = getTasksFromLocalStorage('incompleteTasks');
+  const { baseCompleteTask, baseIncompleteTask } = createBaseTasks();
+
+  const [completeTasks, setCompleteTasks] = useState(completeTasksInStorage || [baseCompleteTask]);
+  const [incompleteTasks, setIncompleteTasks] = useState(incompleteTasksInStorage || [baseIncompleteTask]);
 
   useEffect(() => {
     dispatcher.listen(NEW_TASK, (newTask: Task) => {
-      newTask.isComplete ? setCompleteTasks((prevTasks: Task[]) => [...prevTasks, newTask]) : setIncompleteTasks((prevTasks: Task[]) => [...prevTasks, newTask]);
+      if(newTask.isComplete) {
+        setCompleteTasks((prevTasks: Task[]) => {
+          setTasksOnLocalStorage('completeTasks', [...prevTasks, newTask])
+          return [...prevTasks, newTask]
+        });
+      } else {
+        setIncompleteTasks((prevTasks: Task[]) => {
+          setTasksOnLocalStorage('incompleteTasks', [...prevTasks, newTask])
+          return [...prevTasks, newTask]
+        });
+      }
     });
   }, []);
     
