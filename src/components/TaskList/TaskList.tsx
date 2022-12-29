@@ -1,4 +1,4 @@
-import { Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Typography, Paper } from "@mui/material";
+import { Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Typography, Paper, Icon } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DoneIcon from '@mui/icons-material/Done';
@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { NEW_TASK } from "../../constants/dispatches";
 import { Task } from "../../helpers/interfaces/task.interface";
 import { dispatcher } from "../../helpers/dispatcher"
-import { StyledContainer } from "./TaskList.style";
+import { StyledContainer, StyledTableCell } from "./TaskList.style";
 import { generateRandomUuid } from "../../helpers/generateRandomUuid";
 
 const createBaseTasks = () => {
@@ -17,18 +17,34 @@ const createBaseTasks = () => {
   return { baseCompleteTask, baseIncompleteTask };
 }
 
-const handleDoneTask = (task: Task, setCompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, setIncompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>) => {
+const handleDoneTask = (task: Task, setCompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, setIncompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, completeTasksKey: string, incompleteTasksKey: string) => {
   task.isComplete = !task.isComplete;
 
-  setIncompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id));
-  setCompleteTasks((prevTasks: Task[]) => [...prevTasks, task]);
+  setIncompleteTasks((prevTasks: Task[]) => {
+    const tasks = prevTasks.filter(prevTask => prevTask.id !== task.id);
+    setTasksOnLocalStorage(incompleteTasksKey, tasks);
+    return tasks;
+  });
+  setCompleteTasks((prevTasks: Task[]) => {
+    const tasks = [...prevTasks, task];
+    setTasksOnLocalStorage(completeTasksKey, tasks);
+    return tasks;
+  });
 }
 
-const handleRemoveTask = (task: Task, setCompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, setIncompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>) => {
+const handleUndoneTask = (task: Task, setCompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, setIncompleteTasks: React.Dispatch<React.SetStateAction<Task[]>>, completeTasksKey: string, incompleteTasksKey: string) => {
   task.isComplete = !task.isComplete;
 
-  setCompleteTasks((prevTasks: Task[]) => prevTasks.filter(prevTask => prevTask.id !== task.id));
-  setIncompleteTasks((prevTasks: Task[]) => [...prevTasks, task]);
+  setCompleteTasks((prevTasks: Task[]) => {
+    const tasks = prevTasks.filter(prevTask => prevTask.id !== task.id);
+    setTasksOnLocalStorage(completeTasksKey, tasks);
+    return tasks;
+  });
+  setIncompleteTasks((prevTasks: Task[]) => {
+    const tasks = [...prevTasks, task];
+    setTasksOnLocalStorage(incompleteTasksKey, tasks);
+    return tasks;
+  });
 }
 
 const handleDeleteTask = (task: Task, setTasks: React.Dispatch<React.SetStateAction<Task[]>>, key: string) => {
@@ -92,10 +108,10 @@ export const TaskList = () => {
               <TableRow key={task.id}>
                 <TableCell>{task.taskName}</TableCell>
                 <TableCell>{task.dueDate}</TableCell>
-                <TableCell align='right'>
-                  <RemoveIcon onClick={() => handleRemoveTask(task, setCompleteTasks, setIncompleteTasks)} />
+                <StyledTableCell align='right'>
+                  <RemoveIcon onClick={() => handleUndoneTask(task, setCompleteTasks, setIncompleteTasks, completeTasksKey, incompleteTasksKey)} />
                   <DeleteIcon onClick={() => handleDeleteTask(task, setCompleteTasks, completeTasksKey)} />
-                </TableCell>
+                </StyledTableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -117,10 +133,10 @@ export const TaskList = () => {
               <TableRow key={task.id}>
                 <TableCell>{task.taskName}</TableCell>
                 <TableCell>{task.dueDate}</TableCell>
-                <TableCell align='right'>
-                  <DoneIcon onClick={() => handleDoneTask(task, setCompleteTasks, setIncompleteTasks)} />
+                <StyledTableCell align='right'>
+                  <DoneIcon onClick={() => handleDoneTask(task, setCompleteTasks, setIncompleteTasks, completeTasksKey, incompleteTasksKey)} />
                   <DeleteIcon onClick={() => handleDeleteTask(task, setIncompleteTasks, incompleteTasksKey)} />
-                </TableCell>
+                </StyledTableCell>
               </TableRow>
             ))}
           </TableBody>
