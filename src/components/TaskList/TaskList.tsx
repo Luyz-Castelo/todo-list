@@ -1,4 +1,4 @@
-import { Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Typography, Paper, Icon } from "@mui/material";
+import { Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Paper } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DoneIcon from '@mui/icons-material/Done';
@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { NEW_TASK } from "../../constants/dispatches";
 import { Task } from "../../helpers/interfaces/task.interface";
 import { dispatcher } from "../../helpers/dispatcher"
-import { StyledContainer, StyledTableCell } from "./TaskList.style";
+import { StyledContainer, StyledTableCell, StyledTypography } from "./TaskList.style";
 import { generateRandomUuid } from "../../helpers/generateRandomUuid";
 
 const createBaseTasks = () => {
@@ -93,7 +93,7 @@ export const TaskList = () => {
     
   return (
     <StyledContainer>
-      <Typography variant='h4'>Completed Tasks</Typography>
+      <StyledTypography variant='h4'>Completed Tasks</StyledTypography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -118,7 +118,7 @@ export const TaskList = () => {
         </Table>
       </TableContainer>
 
-      <Typography variant='h4' mt={4}>Incomplete Tasks</Typography>
+      <StyledTypography variant='h4' mt={4}>Incomplete Tasks</StyledTypography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
